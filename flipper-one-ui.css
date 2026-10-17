@@ -1,0 +1,16 @@
+/* Flipper One browser UI simulation — original device image/layout unchanged */
+#official-ui{font-family:monospace;color:#f4f4f4;background:#080a09;line-height:1.15;font-size:clamp(6px,1.05vw,12px);user-select:none}
+#official-ui .fo-screen{height:100%;width:100%;display:flex;flex-direction:column;background:#101411;color:#f3f5ef;overflow:hidden;border:1px solid #6f776d}
+#official-ui .fo-status{height:13%;min-height:9px;display:flex;align-items:center;justify-content:space-between;padding:0 4%;background:#d8e0d0;color:#172018;font-weight:bold;font-size:.82em;white-space:nowrap}
+#official-ui .fo-title{padding:3% 5% 2%;font-weight:bold;color:#dbe8d4;border-bottom:1px solid #51594f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#official-ui .fo-body{flex:1;min-height:0;overflow:hidden;padding:2% 3%;display:flex;flex-direction:column}
+#official-ui .fo-item{display:flex;align-items:center;gap:5px;min-height:0;flex:1;padding:0 3%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#official-ui .fo-item.selected{background:#dce7d3;color:#151b15;font-weight:bold}
+#official-ui .fo-cursor{width:.8em;flex:0 0 .8em}
+#official-ui .fo-footer{padding:2% 4%;font-size:.78em;color:#c5cec0;border-top:1px solid #51594f;display:flex;justify-content:space-between;white-space:nowrap}
+#official-ui .fo-message{margin:auto;text-align:center;line-height:1.5;padding:4%}
+#official-ui .fo-bar{height:5px;border:1px solid #b6c4ad;width:70%;margin:7px auto 0}
+#official-ui .fo-bar span{display:block;height:100%;background:#c9dfbb}
+#official-ui .fo-muted{color:#aab3a5}
+#official-ui .fo-screen *{box-sizing:border-box}
+@media (max-width:600px){#official-ui{font-size:clamp(6px,1.7vw,10px)}}
