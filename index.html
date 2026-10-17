@@ -1,55 +1,43 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flipper One Browser Emulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flipper One</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:#14171C;color:#FF8200;font-family:monospace}
+html,body{margin:0;width:100%;height:100%;background:#14171c;color:#ff8200;font-family:monospace}
 body{display:flex;align-items:center;justify-content:center;overflow:hidden}
 #wrap{position:relative;display:inline-block;min-width:512px;min-height:288px;isolation:isolate;line-height:0}
 #photo{position:relative;z-index:2;display:block;width:auto;height:auto;max-width:98vw;max-height:92vh;pointer-events:none}
-#glow,#panel,#nosignal{position:absolute;left:33.94%;top:28.89%;width:28.76%;height:30.65%}
-#glow{z-index:0;background:#FF8200}
-#panel{z-index:1;image-rendering:pixelated;background:#000}
-#nosignal{z-index:1;display:none;align-items:center;justify-content:center;background:#000;color:#FF8200;font-size:11cqw;container-type:inline-size}
-body.nosignal #nosignal{display:flex}
-body.nophoto #photo{display:none}
-body.nophoto #wrap{width:min(512px,98vw);height:min(288px,92vh);min-width:0;min-height:0}
-body.nophoto #glow,body.nophoto #panel,body.nophoto #nosignal{left:0;top:0;width:100%;height:100%}
-.zone{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;touch-action:none}
+#glow,#panel{position:absolute;left:33.94%;top:28.89%;width:28.76%;height:30.65%}
+#glow{z-index:0;background:#ff8200}
+#panel{z-index:1;background:#000;image-rendering:pixelated}
+#hud{position:fixed;top:20px;left:24px;z-index:10;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.4}
+#stat{color:#ff8200}
+.zone{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:white;cursor:pointer;touch-action:none}
 .zone span{display:none;font-size:10px;line-height:1}
 .show .zone{outline:1px solid #ff8200aa;background:#ff820022}
 .show .zone span{display:block}
-#hud{position:fixed;top:20px;left:24px;z-index:10;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.4}
-#toggle{accent-color:#FF8200}
-#status{color:#aaa}
-#stat{color:#FF8200}
-#official{position:fixed;right:12px;bottom:10px;z-index:20;font:11px monospace;color:#aaa}
-#official a{color:#FF8200}
+body.nophoto #photo{display:none}
+body.nophoto #wrap{width:min(512px,98vw);height:min(288px,92vh);min-width:0;min-height:0}
+body.nophoto #glow,body.nophoto #panel{left:0;top:0;width:100%;height:100%}
 </style>
 </head>
 <body>
 <div id="hud">
 <label>Show controls <input type="checkbox" id="toggle"></label>
-<div id="status">Status: <span id="stat">waiting for official UI</span></div>
+<div>Status: <span id="stat">Waiting for Flipper One UI</span></div>
 </div>
 
 <div id="wrap">
 <div id="glow"></div>
 <canvas id="panel" width="256" height="144"></canvas>
-<div id="nosignal"><span>NO SIGNAL</span></div>
 <img id="photo" src="device.png" alt="">
 </div>
 
-<div id="official">
-<a href="https://github.com/flipperdevices/flipctl-slint">Official FlipCTL UI source</a>
-</div>
-
 <script>
-const ZONES=[
+const zones=[
 {a:'esc',k:'Z',l:.3411,t:.6301,w:.053,h:.053},
 {a:'view',k:'X',l:.3987,t:.6301,w:.053,h:.053},
 {a:'power',k:'C',l:.4564,t:.6301,w:.053,h:.053},
@@ -66,111 +54,66 @@ const ZONES=[
 ];
 
 const wrap=document.getElementById('wrap');
-const photo=document.getElementById('photo');
-const stat=document.getElementById('stat');
-const panel=document.getElementById('panel');
+const canvas=document.getElementById('panel');
+const ctx=canvas.getContext('2d');
 
-photo.addEventListener('error',()=>{
+document.getElementById('photo').addEventListener('error',()=>{
  document.body.classList.add('nophoto');
 });
-photo.addEventListener('load',()=>{
- document.body.classList.remove('nophoto');
-});
-
 document.getElementById('toggle').addEventListener('change',e=>{
  document.body.classList.toggle('show',e.target.checked);
 });
 
-function sendInput(key,type){
- window.dispatchEvent(new CustomEvent('flipper-input',{detail:{key,type}}));
+function send(key,type){
+ window.dispatchEvent(new CustomEvent('flipper-input',{
+  detail:{key,type}
+ }));
 }
 
-for(const z of ZONES){
- const el=document.createElement('button');
- el.className='zone';
- el.type='button';
- el.dataset.k=z.a;
- el.setAttribute('aria-label',z.a);
- el.style.left=z.l*100+'%';
- el.style.top=z.t*100+'%';
- el.style.width=z.w*100+'%';
- el.style.height=z.h*100+'%';
- if(z.round)el.style.borderRadius='50%';
- if(z.cut)el.style.clipPath='polygon(0 0,27% 0,100% 56%,100% 100%,0 100%)';
- const label=document.createElement('span');
- label.textContent=z.k;
- el.appendChild(label);
- wrap.appendChild(el);
- el.addEventListener('pointerdown',()=>sendInput(z.a,'down'));
- el.addEventListener('pointerup',()=>sendInput(z.a,'up'));
- el.addEventListener('click',()=>sendInput(z.a,'press'));
+for(const z of zones){
+ const b=document.createElement('button');
+ b.type='button';
+ b.className='zone';
+ b.setAttribute('aria-label',z.a);
+ b.style.left=z.l*100+'%';
+ b.style.top=z.t*100+'%';
+ b.style.width=z.w*100+'%';
+ b.style.height=z.h*100+'%';
+ if(z.round)b.style.borderRadius='50%';
+ if(z.cut)b.style.clipPath='polygon(0 0,27% 0,100% 56%,100% 100%,0 100%)';
+ const s=document.createElement('span');
+ s.textContent=z.k;
+ b.appendChild(s);
+ wrap.appendChild(b);
+ b.addEventListener('pointerdown',()=>send(z.a,'down'));
+ b.addEventListener('pointerup',()=>send(z.a,'up'));
 }
 
-const keyMap={
+const keys={
  ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
  Enter:'ok',Escape:'esc',Backspace:'back',Tab:'appsw',
  z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
 };
-
 document.addEventListener('keydown',e=>{
- const key=keyMap[e.key];
- if(!key)return;
+ if(keys[e.key]){
  e.preventDefault();
- sendInput(key,'down');
+ send(keys[e.key],'down');
+ }
 });
 document.addEventListener('keyup',e=>{
- const key=keyMap[e.key];
- if(key)sendInput(key,'up');
+ if(keys[e.key])send(keys[e.key],'up');
 });
 
-/*
-  The original remote.js protocol expects a running FlipCTL-compatible
-  service at /stream and /input. GitHub Pages cannot run that service.
-
-  This page deliberately does not draw fake Flipper Zero apps.
-  Connect an actual browser-compatible FlipCTL frontend/runtime here
-  to display the official Flipper One interface and its installed apps.
-*/
-const statLabel=document.getElementById('stat');
-statLabel.textContent='UI backend required';
-
-async function connectOfficialUI(){
- try{
-  const response=await fetch('./remote.js',{cache:'no-store'});
-  if(!response.ok)throw new Error('remote.js unavailable');
-  const source=await response.text();
-  if(!source.includes('flipperStream')||
-     !source.includes('GreyBlitter')){
-   throw new Error('incompatible remote.js');
-  }
-  const script=document.createElement('script');
-  script.src='./remote.js';
-  script.onload=()=>{
-   if(typeof GreyBlitter!=='function'||
-      typeof flipperStream!=='function'){
-    statLabel.textContent='renderer unavailable';
-    return;
-   }
-   const blitter=new GreyBlitter(
-    panel.getContext('2d'),256,144,[255,130,0]
-   );
-   flipperStream(
-    (grey,x,y,w,h)=>blitter.draw(grey,x,y,w,h),
-    (text,ok)=>{
-     statLabel.textContent=text;
-     document.body.classList.toggle('nosignal',ok===false);
-    }
-   );
-   if(typeof flipperWireInput==='function')
-    flipperWireInput('.zone');
-  };
-  script.onerror=()=>statLabel.textContent='renderer failed';
-  document.body.appendChild(script);
- }catch(e){
-  statLabel.textContent='UI backend required';
- }
-}
-connectOfficialUI();
+/* Keep the screen blank until the real Flipper One renderer is connected. */
+ctx.fillStyle='#000';
+ctx.fillRect(0,0,256,144);
+ctx.fillStyle='#ff8200';
+ctx.font='10px monospace';
+ctx.fillText('FLIPPER ONE',8,14);
+ctx.fillRect(8,20,240,1);
+ctx.font='9px monospace';
+ctx.fillText('UI RUNTIME NOT CONNECTED',8,38);
+ctx.fillText('Waiting for device frames',8,53);
 </script>
 </body>
 </html>
