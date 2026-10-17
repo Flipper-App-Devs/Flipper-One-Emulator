@@ -14,3 +14,9 @@
 #official-ui .fo-muted{color:#aab3a5}
 #official-ui .fo-screen *{box-sizing:border-box}
 @media (max-width:600px){#official-ui{font-size:clamp(6px,1.7vw,10px)}}
+
+/* Fix stacking: the screen must render over the device photo; buttons stay above the screen. */
+#screen{z-index:3!important}
+#official-ui{z-index:3!important}
+.zone{z-index:4!important}
+#official-ui .fo-screen{line-height:1.15}
