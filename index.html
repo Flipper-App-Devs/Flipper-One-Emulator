@@ -1,482 +1,164 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flipper One</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flipper One Emulator</title>
 <style>
-  html, body {
-    margin: 0; height: 100%;
-    background: #14171C;
-    display: flex; align-items: center; justify-content: center;
-    font: 12px system-ui, sans-serif; color: #fff;
-    overflow: hidden;
-  }
-  #wrap {
-    position: relative; display: inline-block; isolation: isolate; line-height: 0;
-    min-width: 512px; min-height: 270px;
-  }
-  body.nophoto #photo { display: none; }
-  body.nophoto #wrap { min-width: 0; min-height: 0; }
-  body.nophoto #glow { position: static; width: 512px; height: 288px; }
-  body.nophoto #panel, body.nophoto #nosignal {
-    position: absolute; left: 0; top: 0; width: 512px; height: 288px;
-  }
-  #glow { position: absolute; z-index: 0; background: #FF8200; }
-  #panel {
-    position: absolute; z-index: 1;
-    image-rendering: pixelated;
-  }
-  #photo {
-    position: relative; z-index: 2; display: block;
-    width: auto; height: auto; max-width: 98vw; max-height: calc(92vh - 48px);
-    pointer-events: none;
-  }
-  .zone {
-    position: absolute; z-index: 3; box-sizing: border-box;
-    cursor: pointer; touch-action: none;
-    display: flex; align-items: center; justify-content: center;
-    background: transparent; border: none; padding: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .zone span {
-    pointer-events: none; display: none;
-    font: bold 14px monospace; color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,.9);
-  }
-  .show .zone { background: rgba(255,130,0,.35); border: 1px solid rgba(255,255,255,.85); }
-  .show .zone span { display: block; }
-  #nosignal {
-    position: absolute; z-index: 1; display: none;
-    align-items: center; justify-content: center;
-    background: #000; container-type: inline-size;
-  }
-  #nosignal span {
-    font: bold 11cqw monospace; letter-spacing: .08em; color: #FF8200;
-  }
-  body.nosignal #nosignal { display: flex; }
-  #hud {
-    position: fixed; top: 60px; left: 24px; z-index: 10;
-    display: flex; flex-direction: column; gap: 8px; user-select: none;
-  }
-  #hud label {
-    cursor: pointer; display: flex; align-items: center; gap: 8px;
-    font: 600 15px system-ui, sans-serif; color: #FF8200;
-  }
-  #toggle {
-    appearance: none; margin: 0; cursor: pointer; position: relative;
-    width: 36px; height: 20px; border-radius: 10px; box-sizing: border-box;
-    border: 2px solid #8A9099; background: transparent;
-  }
-  #toggle::before {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 12px; height: 12px; border-radius: 50%; background: #8A9099;
-    transition: left .12s;
-  }
-  #toggle:checked { border-color: #FF8200; background: rgba(255, 130, 0, .25); }
-  #toggle:checked::before { left: 18px; background: #FF8200; }
-  #status { font-variant-numeric: tabular-nums; color: #8A9099; }
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#14171C;color:#FF8200;font-family:monospace}
+body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+#wrap{position:relative;display:inline-block;min-width:512px;min-height:288px;isolation:isolate;line-height:0}
+#glow{position:absolute;z-index:0;background:#FF8200;left:33.94%;top:28.89%;width:28.76%;height:30.65%}
+#panel{position:absolute;z-index:1;left:33.94%;top:28.89%;width:28.76%;height:30.65%;image-rendering:pixelated;background:#000}
+#photo{position:relative;z-index:2;display:block;width:auto;height:auto;max-width:98vw;max-height:92vh;pointer-events:none}
+#nosignal{position:absolute;z-index:1;left:33.94%;top:28.89%;width:28.76%;height:30.65%;display:none;align-items:center;justify-content:center;background:#000;color:#FF8200;font-size:11cqw;container-type:inline-size}
+body.nosignal #nosignal{display:flex}
+body.nophoto #photo{display:none}
+body.nophoto #wrap{width:min(512px,98vw);height:min(288px,92vh);min-width:0;min-height:0}
+body.nophoto #glow{position:absolute;left:0;top:0;width:100%;height:100%}
+body.nophoto #panel,body.nophoto #nosignal{left:0;top:0;width:100%;height:100%}
+.zone{position:absolute;z-index:3;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;touch-action:none}
+.zone span{display:none;font-size:10px;line-height:1}
+.show .zone{outline:1px solid #ff8200aa;background:#ff820022}
+.show .zone span{display:block}
+#hud{position:fixed;top:20px;left:24px;z-index:10;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.4}
+#toggle{accent-color:#FF8200}
+#status{color:#aaa}
+#stat{color:#FF8200}
 </style>
-
+</head>
+<body>
 <div id="hud">
-  <label>Show controls <input type="checkbox" id="toggle"></label>
-  <div id="status">Status: <span id="stat">starting Emulator</span></div>
+<label>Show controls <input type="checkbox" id="toggle"></label>
+<div id="status">Status: <span id="stat">standalone</span></div>
 </div>
 
 <div id="wrap">
-  <div id="glow"></div>
-  <canvas id="panel" width="256" height="144"></canvas>
-  <div id="nosignal"><span>NO SIGNAL</span></div>
-  <img id="photo" src="device.png" alt="">
+<div id="glow"></div>
+<canvas id="panel" width="256" height="144"></canvas>
+<div id="nosignal"><span>NO SIGNAL</span></div>
+<img id="photo" src="device.png" alt="">
 </div>
 
 <script>
-(() => {
-  'use strict';
+const SCREEN={l:33.94,t:28.89,w:28.76,h:30.65};
+const ZONES=[
+{a:'esc',k:'Z',l:.3411,t:.6301,w:.053,h:.053},
+{a:'view',k:'X',l:.3987,t:.6301,w:.053,h:.053},
+{a:'power',k:'C',l:.4564,t:.6301,w:.053,h:.053},
+{a:'edit',k:'V',l:.5140,t:.6301,w:.053,h:.053},
+{a:'run',k:'B',l:.5716,t:.6301,w:.053,h:.053},
+{a:'up',k:'↑',l:.7106,t:.3105,w:.045,h:.085},
+{a:'left',k:'←',l:.6636,t:.3990,w:.045,h:.086},
+{a:'ok',k:'Enter',l:.7106,t:.3990,w:.045,h:.086,round:1},
+{a:'right',k:'→',l:.7576,t:.3990,w:.045,h:.086},
+{a:'down',k:'↓',l:.7106,t:.4885,w:.045,h:.085},
+{a:'appsw',k:'Tab',l:.6596,t:.5535,w:.0615,h:.0811,cut:1},
+{a:'back',k:'Bksp',l:.7780,t:.5655,w:.0515,h:.0969,round:1},
+{a:'ptt',k:'A',l:.2255,t:.1536,w:.071,h:.034}
+];
 
-  // Original screen placement and control hotspots are preserved.
-  const SCREEN = { l: 33.94, t: 28.89, w: 28.76, h: 30.65 };
+const wrap=document.getElementById('wrap');
+const photo=document.getElementById('photo');
+const canvas=document.getElementById('panel');
+const ctx=canvas.getContext('2d');
+const stat=document.getElementById('stat');
 
-  const ZONES = [
-    { a: 'esc',   k: 'Z',      l: .3411, t: .6301, w: .053,  h: .053 },
-    { a: 'view',  k: 'X',      l: .3987, t: .6301, w: .053,  h: .053 },
-    { a: 'power', k: 'C',      l: .4564, t: .6301, w: .053,  h: .053 },
-    { a: 'edit',  k: 'V',      l: .5140, t: .6301, w: .053,  h: .053 },
-    { a: 'run',   k: 'B',      l: .5716, t: .6301, w: .053,  h: .053 },
-    { a: 'up',    k: '\u2191', l: .7106, t: .3105, w: .045,  h: .085 },
-    { a: 'left',  k: '\u2190', l: .6636, t: .3990, w: .045,  h: .086 },
-    { a: 'ok',    k: 'Enter',  l: .7106, t: .3990, w: .045,  h: .086, round: 1 },
-    { a: 'right', k: '\u2192', l: .7576, t: .3990, w: .045,  h: .086 },
-    { a: 'down',  k: '\u2193', l: .7106, t: .4885, w: .045,  h: .085 },
-    { a: 'appsw', k: 'Tab',    l: .6596, t: .5535, w: .0615, h: .0811, cut: 1 },
-    { a: 'back',  k: 'Bksp',   l: .7780, t: .5655, w: .0515, h: .0969, round: 1 },
-    { a: 'ptt',   k: 'A',      l: .2255, t: .1536, w: .071,  h: .034 }
-  ];
+photo.addEventListener('error',()=>{
+ document.body.classList.add('nophoto');
+ stat.textContent='offline';
+});
+photo.addEventListener('load',()=>{
+ document.body.classList.remove('nophoto');
+});
 
-  const wrap = document.getElementById('wrap');
-  const glow = document.getElementById('glow');
-  const panel = document.getElementById('panel');
-  const photo = document.getElementById('photo');
-  const stat = document.getElementById('stat');
-  const ctx = panel.getContext('2d');
+document.getElementById('toggle').addEventListener('change',e=>{
+ document.body.classList.toggle('show',e.target.checked);
+});
 
-  const W = 256;
-  const H = 144;
-  const AMBER = '#FF8200';
-  const INK = '#100D07';
-  const LIGHT = '#FFB43C';
+for(const z of ZONES){
+ const el=document.createElement('button');
+ el.className='zone';
+ el.type='button';
+ el.dataset.k=z.a;
+ el.setAttribute('aria-label',z.a);
+ el.style.left=z.l*100+'%';
+ el.style.top=z.t*100+'%';
+ el.style.width=z.w*100+'%';
+ el.style.height=z.h*100+'%';
+ if(z.round)el.style.borderRadius='50%';
+ if(z.cut)el.style.clipPath='polygon(0 0,27% 0,100% 56%,100% 100%,0 100%)';
+ const label=document.createElement('span');
+ label.textContent=z.k;
+ el.appendChild(label);
+ wrap.appendChild(el);
+ el.addEventListener('click',()=>sendInput(z.a,'press'));
+ el.addEventListener('pointerdown',()=>sendInput(z.a,'down'));
+ el.addEventListener('pointerup',()=>sendInput(z.a,'up'));
+}
 
-  for (const key of ['left', 'top', 'width', 'height']) {
-    const value = SCREEN[key[0]] + '%';
-    for (const el of [glow, panel, document.getElementById('nosignal')]) {
-      el.style[key] = value;
-    }
-  }
+function sendInput(key,type){
+ window.dispatchEvent(new CustomEvent('flipper-input',{detail:{key,type}}));
+}
 
-  photo.addEventListener('error', () => {
-    document.body.classList.add('nophoto');
-    stat.textContent = 'device.png missing — Emulator still running';
-  });
+document.addEventListener('keydown',e=>{
+ const map={
+ ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+ Enter:'ok',Escape:'esc',Backspace:'back',Tab:'appsw',
+ z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
+ };
+ const key=map[e.key];
+ if(key){
+ e.preventDefault();
+ sendInput(key,'down');
+ }
+});
 
-  photo.addEventListener('load', () => {
-    document.body.classList.remove('nophoto');
-  });
+document.addEventListener('keyup',e=>{
+ const map={
+ ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+ Enter:'ok',Escape:'esc',Backspace:'back',Tab:'appsw',
+ z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
+ };
+ if(map[e.key])sendInput(map[e.key],'up');
+});
 
-  // Local demo menus. No HTTP requests or remote backend are used.
-  const menus = {
-    Home: [
-      { icon: '▣', label: 'Applications', target: 'Applications' },
-      { icon: '▤', label: 'File manager', target: 'Files' },
-      { icon: '⌁', label: 'Connectivity', target: 'Connectivity' },
-      { icon: '⚙', label: 'Settings', target: 'Settings' },
-      { icon: 'ⓘ', label: 'About', target: 'About' }
-    ],
-    Applications: [
-      { icon: '>', label: 'Terminal', message: 'Terminal demo' },
-      { icon: '>', label: 'Browser', message: 'Browser demo' },
-      { icon: '>', label: 'System monitor', message: 'CPU: 12%  RAM: 42%' },
-      { icon: '>', label: 'Tools', target: 'Tools' }
-    ],
-    Tools: [
-      { icon: '>', label: 'Counter', message: 'Counter: 001' },
-      { icon: '>', label: 'Stopwatch', message: 'Stopwatch demo' },
-      { icon: '>', label: 'Device info', target: 'About' }
-    ],
-    Files: [
-      { icon: '>', label: 'Internal storage', message: 'Storage: 64 GB' },
-      { icon: '>', label: 'Downloads', message: 'No files in demo' },
-      { icon: '>', label: 'Documents', message: 'No files in demo' }
-    ],
-    Connectivity: [
-      { icon: '>', label: 'Wi-Fi', message: 'Wi-Fi: Demo only' },
-      { icon: '>', label: 'Bluetooth', message: 'Bluetooth: Demo only' },
-      { icon: '>', label: 'USB', message: 'USB: Not connected' }
-    ],
-    Settings: [
-      { icon: '>', label: 'Display', target: 'Display' },
-      { icon: '>', label: 'Sound', message: 'Sound settings demo' },
-      { icon: '>', label: 'Power', message: 'Battery: 87%' },
-      { icon: '>', label: 'Reset UI', action: 'reset' }
-    ],
-    Display: [
-      { icon: '>', label: 'Brightness', message: 'Brightness: 100%' },
-      { icon: '>', label: 'Theme', message: 'Amber monochrome' },
-      { icon: '>', label: 'Backlight', message: 'Backlight: On' }
-    ],
-    About: [
-      { icon: 'i', label: 'Flipper One' },
-      { icon: 'i', label: 'Browser edition' },
-      { icon: 'i', label: 'Build: Demo 1.0' },
-      { icon: 'i', label: 'No backend required' }
-    ]
-  };
-
-  let page = 'Home';
-  let cursor = 0;
-  let notice = '';
-  let noticeUntil = 0;
-  let lastStatus = '';
-
-  function items() {
-    return menus[page] || [];
-  }
-
-  function text(value, x, y, size = 9, color = INK) {
-    ctx.fillStyle = color;
-    ctx.font = `${size}px monospace`;
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(String(value), x, y);
-  }
-
-  function drawScreen() {
-    // Amber backlight with black monochrome graphics.
-    ctx.fillStyle = AMBER;
-    ctx.fillRect(0, 0, W, H);
-
-    // Status bar.
-    ctx.fillStyle = INK;
-    ctx.fillRect(0, 0, W, 14);
-
-    const now = new Date();
-    const time =
-      String(now.getHours()).padStart(2, '0') + ':' +
-      String(now.getMinutes()).padStart(2, '0');
-
-    text(time, 5, 10, 8, LIGHT);
-    text('BAT 87%', 202, 10, 8, LIGHT);
-
-    if (notice && Date.now() >= noticeUntil) {
-      notice = '';
-    }
-
-    if (notice) {
-      text('FLIPPER ONE', 5, 25, 10);
-      ctx.fillStyle = INK;
-      ctx.fillRect(5, 29, 246, 1);
-
-      const words = notice.split(' ');
-      let line = '';
-      let row = 0;
-
-      for (const word of words) {
-        const next = line ? line + ' ' + word : word;
-
-        if (next.length > 27) {
-          text(line, 7, 48 + row * 13, 9);
-          row++;
-          line = word;
-        } else {
-          line = next;
-        }
-      }
-
-      if (line && row < 4) text(line, 7, 48 + row * 13, 9);
-      text('DEMO SIMULATION', 7, 112, 8);
-    } else {
-      text(page.toUpperCase(), 5, 25, 10);
-      ctx.fillStyle = INK;
-      ctx.fillRect(5, 29, 246, 1);
-
-      const list = items();
-      const visible = 5;
-      let start = Math.max(0, cursor - visible + 1);
-      start = Math.min(start, Math.max(0, list.length - visible));
-
-      for (let row = 0; row < visible; row++) {
-        const index = start + row;
-        const item = list[index];
-        if (!item) continue;
-
-        const y = 32 + row * 19;
-
-        if (index === cursor) {
-          ctx.fillStyle = INK;
-          ctx.fillRect(4, y, 248, 17);
-          text(item.icon, 9, y + 12, 9, LIGHT);
-          text(item.label, 23, y + 12, 9, LIGHT);
-        } else {
-          text(item.icon, 9, y + 12, 9, INK);
-          text(item.label, 23, y + 12, 9, INK);
-        }
-      }
-
-      if (list.length > visible) {
-        const barHeight = Math.max(8, 85 * visible / list.length);
-        const barY = 33 + cursor / list.length * (85 - barHeight);
-
-        ctx.fillStyle = INK;
-        ctx.fillRect(251, 33, 2, 85);
-        ctx.fillStyle = LIGHT;
-        ctx.fillRect(251, barY, 2, barHeight);
-      }
-    }
-
-    // Bottom soft-key labels.
-    ctx.fillStyle = INK;
-    ctx.fillRect(0, 131, W, 13);
-    text('BACK', 5, 140, 8, LIGHT);
-    text('OK', 229, 140, 8, LIGHT);
-  }
-
-  function setNotice(message, duration = 1800) {
-    notice = message;
-    noticeUntil = Date.now() + duration;
-    updateStatus(message);
-  }
-
-  function updateStatus(message) {
-    if (message !== lastStatus) {
-      stat.textContent = message;
-      lastStatus = message;
-    }
-  }
-
-  function home() {
-    page = 'Home';
-    cursor = 0;
-    notice = '';
-    updateStatus('local Emulator');
-  }
-
-  function select() {
-    const item = items()[cursor];
-    if (!item) return;
-
-    if (item.action === 'reset') {
-      home();
-      setNotice('Interface reset');
-      return;
-    }
-
-    if (item.target && menus[item.target]) {
-      page = item.target;
-      cursor = 0;
-      notice = '';
-      updateStatus('Screen: ' + page);
-      return;
-    }
-
-    setNotice(item.message || item.label);
-  }
-
-  function handle(action) {
-    switch (action) {
-      case 'up':
-        cursor = Math.max(0, cursor - 1);
-        notice = '';
-        break;
-
-      case 'down':
-        cursor = Math.min(items().length - 1, cursor + 1);
-        notice = '';
-        break;
-
-      case 'left':
-      case 'back':
-      case 'esc':
-        if (page !== 'Home') {
-          home();
-        } else {
-          setNotice('Home screen');
-        }
-        break;
-
-      case 'right':
-      case 'ok':
-      case 'enter':
-      case 'run':
-        select();
-        break;
-
-      case 'view':
-        setNotice('View: Demo mode');
-        break;
-
-      case 'power':
-        setNotice('Power menu: Demo mode');
-        break;
-
-      case 'edit':
-        setNotice('Edit: Demo mode');
-        break;
-
-      case 'appsw': {
-        const names = Object.keys(menus);
-        const next = (names.indexOf(page) + 1) % names.length;
-        page = names[next];
-        cursor = 0;
-        notice = '';
-        updateStatus('Screen: ' + page);
-        break;
-      }
-
-      case 'ptt':
-        setNotice('PTT: Demo mode');
-        break;
-    }
-
-    if (!notice) {
-      updateStatus(
-        `Screen: ${page} · Item ${cursor + 1}/${Math.max(1, items().length)}`
-      );
-    }
-  }
-
-  // Keep the original control hotspots and their exact positions.
-  for (const z of ZONES) {
-    const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'zone';
-    el.dataset.k = z.a;
-    el.setAttribute('aria-label', z.a);
-
-    el.style.left = (z.l * 100) + '%';
-    el.style.top = (z.t * 100) + '%';
-    el.style.width = (z.w * 100) + '%';
-    el.style.height = (z.h * 100) + '%';
-
-    if (z.round) el.style.borderRadius = '50%';
-
-    if (z.cut) {
-      el.style.clipPath =
-        'polygon(0 0, 27% 0, 100% 56%, 100% 100%, 0 100%)';
-    }
-
-    const label = document.createElement('span');
-    label.textContent = z.k;
-    el.appendChild(label);
-
-    el.addEventListener('click', event => {
-      event.preventDefault();
-      handle(z.a);
-    });
-
-    wrap.appendChild(el);
-  }
-
-  // Preserve the original Show controls switch.
-  document.getElementById('toggle').addEventListener('change', event => {
-    document.body.classList.toggle('show', event.target.checked);
-  });
-
-  // Keyboard support: arrows, Enter, Escape, Backspace, and the original
-  // letter shortcuts shown on the on-screen hotspots.
-  window.addEventListener('keydown', event => {
-    if (event.target instanceof HTMLInputElement) return;
-
-    const keys = {
-      ArrowUp: 'up',
-      ArrowDown: 'down',
-      ArrowLeft: 'left',
-      ArrowRight: 'right',
-      Enter: 'ok',
-      Escape: 'esc',
-      Backspace: 'back',
-      Tab: 'appsw',
-      z: 'esc', Z: 'esc',
-      x: 'view', X: 'view',
-      c: 'power', C: 'power',
-      v: 'edit', V: 'edit',
-      b: 'run', B: 'run',
-      a: 'ptt', A: 'ptt'
-    };
-
-    const action = keys[event.key];
-    if (!action) return;
-
-    event.preventDefault();
-    if (!event.repeat) handle(action);
-  });
-
-  // Never show NO SIGNAL in standalone mode.
-  document.body.classList.remove('nosignal');
-  updateStatus('local Emulator');
-
-  function frame() {
-    drawScreen();
-    requestAnimationFrame(frame);
-  }
-
-  frame();
-})();
+/* Standalone screen fallback: pixelated amber display.
+   Replace this renderer with the official Flipper One UI runtime
+   to run its real apps. */
+function drawScreen(){
+ ctx.fillStyle='#080706';
+ ctx.fillRect(0,0,256,144);
+ ctx.fillStyle='#FF8200';
+ ctx.font='bold 10px monospace';
+ ctx.fillText('FLIPPER ONE',8,13);
+ ctx.fillRect(7,18,242,1);
+ const apps=[
+ ['>','Applications'],
+ ['','GPIO'],
+ ['','Sub-GHz'],
+ ['','NFC'],
+ ['','Infrared'],
+ ['','Bluetooth'],
+ ['','Settings']
+ ];
+ ctx.font='10px monospace';
+ apps.forEach((app,i)=>{
+  const y=34+i*15;
+  if(i===0){
+   ctx.fillStyle='#FF8200';
+   ctx.fillRect(5,y-10,246,13);
+   ctx.fillStyle='#100900';
+  }else ctx.fillStyle='#FF8200';
+  ctx.fillText(app[0]+' '+app[1],10,y);
+ });
+ ctx.fillStyle='#FF8200';
+ ctx.fillRect(0,133,256,1);
+ ctx.font='8px monospace';
+ ctx.fillText('OK: OPEN     BACK: RETURN',7,142);
+}
+drawScreen();
 </script>
+</body>
 </html>
