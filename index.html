@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -80,7 +79,7 @@
 
 <div id="hud">
   <label>Show controls <input type="checkbox" id="toggle"></label>
-  <div id="status">Status: <span id="stat">starting simulator</span></div>
+  <div id="status">Status: <span id="stat">starting Emulator</span></div>
 </div>
 
 <div id="wrap">
@@ -135,7 +134,7 @@
 
   photo.addEventListener('error', () => {
     document.body.classList.add('nophoto');
-    stat.textContent = 'device.png missing — simulator still running';
+    stat.textContent = 'device.png missing — Emulator still running';
   });
 
   photo.addEventListener('load', () => {
@@ -315,7 +314,7 @@
     page = 'Home';
     cursor = 0;
     notice = '';
-    updateStatus('local simulator');
+    updateStatus('local Emulator');
   }
 
   function select() {
@@ -470,7 +469,7 @@
 
   // Never show NO SIGNAL in standalone mode.
   document.body.classList.remove('nosignal');
-  updateStatus('local simulator');
+  updateStatus('local Emulator');
 
   function frame() {
     drawScreen();
@@ -481,4 +480,3 @@
 })();
 </script>
 </html>
-```
