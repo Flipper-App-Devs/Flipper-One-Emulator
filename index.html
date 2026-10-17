@@ -3,289 +3,139 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flipper One - LocalBrowser</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flipper One</title>
 <style>
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  background: #14171c;
-  color: #ff8200;
-  font-family: monospace;
-}
-
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-#wrap {
-  position: relative;
-  display: inline-block;
-  min-width: 512px;
-  min-height: 270px;
-  isolation: isolate;
-  line-height: 0;
-}
-
-body.nophoto #photo {
-  display: none;
-}
-
-body.nophoto #wrap {
-  width: 512px;
-  height: 288px;
-  min-width: 0;
-  min-height: 0;
-}
-
-#glow {
-  position: absolute;
-  z-index: 0;
-  left: 33.94%;
-  top: 28.89%;
-  width: 28.76%;
-  height: 30.65%;
-  background: #ff8200;
-}
-
-#panel {
-  position: absolute;
-  z-index: 1;
-  left: 33.94%;
-  top: 28.89%;
-  width: 28.76%;
-  height: 30.65%;
-  background: #000;
-  image-rendering: pixelated;
-}
-
-#photo {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 98vw;
-  max-height: calc(92vh - 48px);
-  pointer-events: none;
-}
-
-#nosignal {
-  position: absolute;
-  z-index: 1;
-  left: 33.94%;
-  top: 28.89%;
-  width: 28.76%;
-  height: 30.65%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  container-type: inline-size;
-}
-
-#nosignal span {
-  color: #ff8200;
-  font-size: 11cqw;
-}
-
-body.nosignal #nosignal {
-  display: flex;
-}
-
-body.nophoto #glow,
-body.nophoto #panel,
-body.nophoto #nosignal {
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.zone {
-  position: absolute;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-  touch-action: none;
-}
-
-.zone span {
-  display: none;
-  font-size: 10px;
-  line-height: 1;
-}
-
-.show .zone {
-  outline: 1px solid #ff8200aa;
-  background: #ff820022;
-}
-
-.show .zone span {
-  display: block;
-}
-
-#hud {
-  position: fixed;
-  top: 20px;
-  left: 24px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-#toggle {
-  accent-color: #ff8200;
-}
-
-#status {
-  color: #aaa;
-}
-
-#stat {
-  color: #ff8200;
-}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#14171c;color:#ff8200;font-family:monospace}
+body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+#wrap{position:relative;display:inline-block;min-width:512px;min-height:288px;isolation:isolate;line-height:0}
+#photo{position:relative;z-index:2;display:block;width:auto;height:auto;max-width:98vw;max-height:92vh;pointer-events:none}
+#screen{position:absolute;z-index:1;left:33.94%;top:28.89%;width:28.76%;height:30.65%;overflow:hidden;background:#000}
+#official-ui{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000}
+#official-ui canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+#official-ui img{image-rendering:pixelated}
+#hud{position:fixed;top:20px;left:24px;z-index:10;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.4;color:#ddd}
+#toggle{accent-color:#ff8200}
+#status{color:#aaa}
+#stat{color:#ff8200}
+.zone{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:white;cursor:pointer;touch-action:none}
+.zone span{display:none;font-size:10px;line-height:1}
+.show .zone{outline:1px solid #ff8200aa;background:#ff820022}
+.show .zone span{display:block}
+body.nophoto #photo{display:none}
+body.nophoto #wrap{width:min(512px,98vw);height:min(288px,92vh);min-width:0;min-height:0}
+body.nophoto #screen{left:0;top:0;width:100%;height:100%}
+@media(max-width:600px){#hud{top:8px;left:8px;font-size:11px}}
 </style>
 </head>
-
 <body>
-<div id="hud">
-  <label>
-    Show controls
-    <input type="checkbox" id="toggle">
-  </label>
 
-  <div id="status">
-    Status: <span id="stat">connecting</span>
-  </div>
+<div id="hud">
+<label>Show controls <input type="checkbox" id="toggle"></label>
+<div id="status">Status: <span id="stat">Official UI bundle not loaded</span></div>
 </div>
 
 <div id="wrap">
-  <div id="glow"></div>
-
-  <canvas id="panel" width="256" height="144"></canvas>
-
-  <div id="nosignal">
-    <span>NO SIGNAL</span>
-  </div>
-
-  <img id="photo" src="device.png" alt="">
+<img id="photo" src="device.png" alt="Flipper One">
+<div id="screen">
+<div id="official-ui"></div>
+</div>
 </div>
 
-<script src="remote.js"></script>
+<!-- Export the real official UI build to these two files.
+     No fake Flipper Zero menu is substituted if they are missing. -->
+<link rel="stylesheet" href="./flipper-one-ui.css">
+<script src="./flipper-one-ui.js"></script>
 
 <script>
-flipperTabs();
-
-const SCREEN = {
-  l: 33.94,
-  t: 28.89,
-  w: 28.76,
-  h: 30.65
-};
-
-const ZONES = [
-  {a:'esc',   k:'Z',     l:.3411,t:.6301,w:.053, h:.053},
-  {a:'view',  k:'X',     l:.3987,t:.6301,w:.053, h:.053},
-  {a:'power', k:'C',     l:.4564,t:.6301,w:.053, h:.053},
-  {a:'edit',  k:'V',     l:.5140,t:.6301,w:.053, h:.053},
-  {a:'run',   k:'B',     l:.5716,t:.6301,w:.053, h:.053},
-  {a:'up',    k:'↑',     l:.7106,t:.3105,w:.045, h:.085},
-  {a:'left',  k:'←',     l:.6636,t:.3990,w:.045, h:.086},
-  {a:'ok',    k:'Enter', l:.7106,t:.3990,w:.045, h:.086,round:1},
-  {a:'right', k:'→',     l:.7576,t:.3990,w:.045, h:.086},
-  {a:'down',  k:'↓',     l:.7106,t:.4885,w:.045, h:.085},
-  {a:'appsw', k:'Tab',   l:.6596,t:.5535,w:.0615,h:.0811,cut:1},
-  {a:'back',  k:'Bksp',  l:.7780,t:.5655,w:.0515,h:.0969,round:1},
-  {a:'ptt',   k:'A',     l:.2255,t:.1536,w:.071, h:.034}
+const zones=[
+{a:'esc',k:'Z',l:.3411,t:.6301,w:.053,h:.053},
+{a:'view',k:'X',l:.3987,t:.6301,w:.053,h:.053},
+{a:'power',k:'C',l:.4564,t:.6301,w:.053,h:.053},
+{a:'edit',k:'V',l:.5140,t:.6301,w:.053,h:.053},
+{a:'run',k:'B',l:.5716,t:.6301,w:.053,h:.053},
+{a:'up',k:'↑',l:.7106,t:.3105,w:.045,h:.085},
+{a:'left',k:'←',l:.6636,t:.3990,w:.045,h:.086},
+{a:'ok',k:'Enter',l:.7106,t:.3990,w:.045,h:.086,round:1},
+{a:'right',k:'→',l:.7576,t:.3990,w:.045,h:.086},
+{a:'down',k:'↓',l:.7106,t:.4885,w:.045,h:.085},
+{a:'appsw',k:'Tab',l:.6596,t:.5535,w:.0615,h:.0811,cut:1},
+{a:'back',k:'Bksp',l:.7780,t:.5655,w:.0515,h:.0969,round:1},
+{a:'ptt',k:'A',l:.2255,t:.1536,w:.071,h:.034}
 ];
 
-const wrap = document.getElementById('wrap');
-const glow = document.getElementById('glow');
-const panel = document.getElementById('panel');
-const nosignal = document.getElementById('nosignal');
-const photo = document.getElementById('photo');
-const stat = document.getElementById('stat');
+const wrap=document.getElementById('wrap');
+const photo=document.getElementById('photo');
+const stat=document.getElementById('stat');
+const ui=document.getElementById('official-ui');
 
-photo.addEventListener('error', () => {
-  document.body.classList.add('nophoto');
-  stat.textContent = 'device.png missing';
+photo.addEventListener('error',()=>document.body.classList.add('nophoto'));
+photo.addEventListener('load',()=>document.body.classList.remove('nophoto'));
+
+document.getElementById('toggle').addEventListener('change',e=>{
+ document.body.classList.toggle('show',e.target.checked);
 });
 
-photo.addEventListener('load', () => {
-  document.body.classList.remove('nophoto');
-});
-
-for (const key of ['left', 'top', 'width', 'height']) {
-  const value = SCREEN[key[0]] + '%';
-
-  for (const el of [glow, panel, nosignal]) {
-    el.style[key] = value;
-  }
+function input(key,type){
+ const detail={key,type};
+ window.dispatchEvent(new CustomEvent('flipper-input',{detail}));
+ if(window.FlipperOneUI?.input) window.FlipperOneUI.input(detail);
 }
 
-for (const z of ZONES) {
-  const el = document.createElement('button');
+for(const z of zones){
+ const b=document.createElement('button');
+ b.type='button';
+ b.className='zone';
+ b.dataset.key=z.a;
+ b.setAttribute('aria-label',z.a);
+ b.style.left=z.l*100+'%';
+ b.style.top=z.t*100+'%';
+ b.style.width=z.w*100+'%';
+ b.style.height=z.h*100+'%';
+ if(z.round)b.style.borderRadius='50%';
+ if(z.cut)b.style.clipPath='polygon(0 0,27% 0,100% 56%,100% 100%,0 100%)';
+ const label=document.createElement('span');
+ label.textContent=z.k;
+ b.appendChild(label);
+ wrap.appendChild(b);
 
-  el.type = 'button';
-  el.className = 'zone';
-  el.dataset.k = z.a;
-  el.setAttribute('aria-label', z.a);
-
-  el.style.left = (z.l * 100) + '%';
-  el.style.top = (z.t * 100) + '%';
-  el.style.width = (z.w * 100) + '%';
-  el.style.height = (z.h * 100) + '%';
-
-  if (z.round) {
-    el.style.borderRadius = '50%';
-  }
-
-  if (z.cut) {
-    el.style.clipPath =
-      'polygon(0 0, 27% 0, 100% 56%, 100% 100%, 0 100%)';
-  }
-
-  const label = document.createElement('span');
-  label.textContent = z.k;
-  el.appendChild(label);
-
-  wrap.appendChild(el);
+ b.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  b.setPointerCapture?.(e.pointerId);
+  input(z.a,'down');
+ });
+ const release=()=>input(z.a,'up');
+ b.addEventListener('pointerup',release);
+ b.addEventListener('pointercancel',release);
 }
 
-flipperWireInput('.zone');
+const keymap={
+ ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+ Enter:'ok',Escape:'esc',Backspace:'back',Tab:'appsw',
+ z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
+};
 
-document.getElementById('toggle').addEventListener('change', e => {
-  document.body.classList.toggle('show', e.target.checked);
+document.addEventListener('keydown',e=>{
+ const k=keymap[e.key];
+ if(k){e.preventDefault();input(k,'down');}
+});
+document.addEventListener('keyup',e=>{
+ const k=keymap[e.key];
+ if(k){e.preventDefault();input(k,'up');}
 });
 
-flipperStream(
-  (grey, x, y, w, h) => {
-    blitter.draw(grey, x, y, w, h);
-  },
-  (text, ok) => {
-    stat.textContent = text;
-    document.body.classList.toggle('nosignal', ok === false);
-  }
-);
+if(window.FlipperOneUI){
+ try{
+  window.FlipperOneUI.mount(ui);
+  stat.textContent='Official UI loaded';
+ }catch(error){
+  stat.textContent='Official UI failed to mount';
+  console.error(error);
+ }
+}else{
+ stat.textContent='Official UI bundle not loaded';
+}
 </script>
 </body>
 </html>
