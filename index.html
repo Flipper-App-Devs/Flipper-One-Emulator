@@ -1,141 +1,97 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flipper One</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#15171a">
+<title>Flipper One — Browser UI</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:#14171c;color:#ff8200;font-family:monospace}
-body{display:flex;align-items:center;justify-content:center;overflow:hidden}
-#wrap{position:relative;display:inline-block;min-width:512px;min-height:288px;isolation:isolate;line-height:0}
-#photo{position:relative;z-index:2;display:block;width:auto;height:auto;max-width:98vw;max-height:92vh;pointer-events:none}
-#screen{position:absolute;z-index:1;left:33.94%;top:28.89%;width:28.76%;height:30.65%;overflow:hidden;background:#000}
-#official-ui{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000}
-#official-ui canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
-#official-ui img{image-rendering:pixelated}
-#hud{position:fixed;top:20px;left:24px;z-index:10;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.4;color:#ddd}
-#toggle{accent-color:#ff8200}
-#status{color:#aaa}
-#stat{color:#ff8200}
-.zone{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:white;cursor:pointer;touch-action:none}
-.zone span{display:none;font-size:10px;line-height:1}
-.show .zone{outline:1px solid #ff8200aa;background:#ff820022}
-.show .zone span{display:block}
-body.nophoto #photo{display:none}
-body.nophoto #wrap{width:min(512px,98vw);height:min(288px,92vh);min-width:0;min-height:0}
-body.nophoto #screen{left:0;top:0;width:100%;height:100%}
-@media(max-width:600px){#hud{top:8px;left:8px;font-size:11px}}
+:root{color-scheme:dark;--orange:#ff8200;--bg:#15171a;--panel:#202329;--line:#383c43;--text:#f1f1f1;--muted:#a4a8b0}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 28%,#30343b 0,#191b1f 44%,#101113 100%);color:var(--text);font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;display:flex;flex-direction:column;align-items:center;padding:26px 16px 22px}
+header{width:min(900px,100%);display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}h1{font-size:15px;letter-spacing:.16em;text-transform:uppercase;margin:0;color:var(--orange)}.pill{font-size:11px;border:1px solid #454950;border-radius:99px;padding:5px 10px;color:#c6c9ce}
+main{width:min(900px,100%);display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:22px;align-items:center}
+.device{width:100%;max-width:600px;justify-self:center;background:linear-gradient(145deg,#30343a,#202328 42%,#17191c);border:1px solid #4a4e55;border-radius:32px;padding:24px 26px 28px;box-shadow:0 24px 70px #0009,inset 0 1px #ffffff20;position:relative}
+.brand{display:flex;justify-content:space-between;align-items:center;margin:0 5px 14px;color:#b9bdc3;font-size:11px;letter-spacing:.2em}.brand strong{color:var(--orange);font-weight:800}
+.bezel{background:#080909;border-radius:14px;padding:12px;border:1px solid #090a0b;box-shadow:inset 0 2px 9px #000}
+#screen{aspect-ratio:16/9;width:100%;background:#e7e9e2;color:#151714;position:relative;overflow:hidden;font-size:clamp(10px,1.5vw,13px);line-height:1.2;display:flex;flex-direction:column;image-rendering:pixelated}
+.statusbar{height:18%;background:#222622;color:#f3f3eb;display:flex;align-items:center;justify-content:space-between;padding:0 3.5%;font-weight:700;border-bottom:2px solid #8b9187}.screen-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:3.5%;gap:3px}.screen-title{font-weight:900;font-size:1.1em;margin-bottom:3px}.menu-item{display:flex;align-items:center;gap:6px;padding:3px 5px;min-height:17%;white-space:nowrap}.menu-item.active{background:#242823;color:#f8f8f0}.menu-item .arrow{width:9px;flex-shrink:0}.screen-foot{background:#d0d3cb;color:#30342e;display:flex;justify-content:space-between;padding:4px 3.5%;font-size:.82em}
+.hardware{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:20px}.keys{display:flex;gap:7px;flex-wrap:wrap}.key{height:29px;min-width:34px;padding:0 9px;border:1px solid #555a61;border-radius:8px;background:linear-gradient(#3b4047,#25282d);color:#dfe1e4;font:700 10px inherit;cursor:pointer;box-shadow:0 3px 0 #111;touch-action:manipulation}.key:active,.key.pressed{transform:translateY(2px);box-shadow:0 1px 0 #111;color:var(--orange)}.dpad{display:grid;grid-template-columns:32px 32px 32px;grid-template-rows:32px 32px 32px;gap:3px}.dpad .key{padding:0;min-width:0;font-size:15px;border-radius:9px}.up{grid-column:2}.left{grid-column:1;grid-row:2}.ok{grid-column:2;grid-row:2;color:var(--orange)}.right{grid-column:3;grid-row:2}.down{grid-column:2;grid-row:3}
+.side{display:flex;flex-direction:column;gap:12px}.card{background:#202329c9;border:1px solid #3b3f46;border-radius:13px;padding:15px}.card h2{margin:0 0 9px;color:var(--orange);font-size:11px;letter-spacing:.12em;text-transform:uppercase}.card p{margin:0;color:#c3c6cc;font-size:12px}.row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #ffffff0d;font-size:12px}.row:last-child{border:0}.row span:first-child{color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:8px}.action{border:1px solid #4b5058;background:#2a2e34;color:#e8e9ec;padding:8px 10px;border-radius:8px;cursor:pointer;font:inherit;font-size:11px}.action:hover{border-color:var(--orange)}.hint{color:#9ca1a9;font-size:11px;margin:14px 0 0;text-align:center}footer{width:min(900px,100%);color:#777d86;font-size:11px;margin-top:20px;text-align:center}
+@media(max-width:700px){body{padding:16px 10px}header{margin-bottom:12px}main{grid-template-columns:1fr;gap:14px}.device{padding:17px 16px 20px;border-radius:24px}.side{display:grid;grid-template-columns:1fr 1fr}.card{padding:12px}.screen{font-size:12px}.hint{margin-top:10px}}@media(max-width:420px){.side{grid-template-columns:1fr}.brand{font-size:9px}.hardware{gap:10px}.key{min-width:29px;padding:0 6px}}
 </style>
 </head>
 <body>
-
-<div id="hud">
-<label>Show controls <input type="checkbox" id="toggle"></label>
-<div id="status">Status: <span id="stat">Official UI bundle not loaded</span></div>
+<header><h1>Flipper One <span style="color:#858b94">/ browser UI</span></h1><span class="pill" id="connection">LOCAL DEMO · NO DEVICE</span></header>
+<main>
+<section class="device" aria-label="Interactive Flipper One style interface">
+<div class="brand"><span>FLIPPER <strong>ONE</strong></span><span>256 × 144</span></div>
+<div class="bezel"><div id="screen" role="application" aria-label="Interactive device screen"></div></div>
+<div class="hardware">
+<div class="keys"><button class="key" data-key="esc">ESC</button><button class="key" data-key="view">VIEW</button><button class="key" data-key="power">PWR</button><button class="key" data-key="edit">EDIT</button><button class="key" data-key="run">RUN</button></div>
+<div class="dpad"><button class="key up" data-key="up" aria-label="Up">▲</button><button class="key left" data-key="left" aria-label="Left">◀</button><button class="key ok" data-key="ok" aria-label="Select">●</button><button class="key right" data-key="right" aria-label="Right">▶</button><button class="key down" data-key="down" aria-label="Down">▼</button></div>
 </div>
-
-<div id="wrap">
-<img id="photo" src="device.png" alt="Flipper One">
-<div id="screen">
-<div id="official-ui"></div>
-</div>
-</div>
-
-<!-- Export the real official UI build to these two files.
-     No fake Flipper Zero menu is substituted if they are missing. -->
-<link rel="stylesheet" href="./flipper-one-ui.css">
-<script src="./flipper-one-ui.js"></script>
-
+</section>
+<aside class="side">
+<section class="card"><h2>Controls</h2><p>Use the on-screen buttons or your keyboard. This is a self-contained UI mockup; it does not connect to a physical Flipper One.</p></section>
+<section class="card"><h2>Keyboard</h2><div class="row"><span>Navigate</span><b>Arrow keys</b></div><div class="row"><span>Select</span><b>Enter</b></div><div class="row"><span>Back</span><b>Esc / Backspace</b></div><div class="row"><span>Quick keys</span><b>Z X C V B</b></div></section>
+<section class="card"><h2>Quick actions</h2><div class="actions"><button class="action" id="home">Home</button><button class="action" id="settings">Settings</button><button class="action" id="about">About</button><button class="action" id="reset">Restart UI</button></div></section>
+<section class="card"><h2>Runtime</h2><div class="row"><span>Rendering</span><b>HTML / CSS</b></div><div class="row"><span>Backend</span><b>None</b></div><div class="row"><span>Network calls</span><b>None</b></div></section>
+</aside>
+</main>
+<p class="hint">Tip: click a control or use the arrow keys · Enter selects · Esc goes back</p>
+<footer>Standalone GitHub Pages interface · no install, server, or external libraries required</footer>
 <script>
-const zones=[
-{a:'esc',k:'Z',l:.3411,t:.6301,w:.053,h:.053},
-{a:'view',k:'X',l:.3987,t:.6301,w:.053,h:.053},
-{a:'power',k:'C',l:.4564,t:.6301,w:.053,h:.053},
-{a:'edit',k:'V',l:.5140,t:.6301,w:.053,h:.053},
-{a:'run',k:'B',l:.5716,t:.6301,w:.053,h:.053},
-{a:'up',k:'↑',l:.7106,t:.3105,w:.045,h:.085},
-{a:'left',k:'←',l:.6636,t:.3990,w:.045,h:.086},
-{a:'ok',k:'Enter',l:.7106,t:.3990,w:.045,h:.086,round:1},
-{a:'right',k:'→',l:.7576,t:.3990,w:.045,h:.086},
-{a:'down',k:'↓',l:.7106,t:.4885,w:.045,h:.085},
-{a:'appsw',k:'Tab',l:.6596,t:.5535,w:.0615,h:.0811,cut:1},
-{a:'back',k:'Bksp',l:.7780,t:.5655,w:.0515,h:.0969,round:1},
-{a:'ptt',k:'A',l:.2255,t:.1536,w:.071,h:.034}
-];
-
-const wrap=document.getElementById('wrap');
-const photo=document.getElementById('photo');
-const stat=document.getElementById('stat');
-const ui=document.getElementById('official-ui');
-
-photo.addEventListener('error',()=>document.body.classList.add('nophoto'));
-photo.addEventListener('load',()=>document.body.classList.remove('nophoto'));
-
-document.getElementById('toggle').addEventListener('change',e=>{
- document.body.classList.toggle('show',e.target.checked);
-});
-
-function input(key,type){
- const detail={key,type};
- window.dispatchEvent(new CustomEvent('flipper-input',{detail}));
- if(window.FlipperOneUI?.input) window.FlipperOneUI.input(detail);
-}
-
-for(const z of zones){
- const b=document.createElement('button');
- b.type='button';
- b.className='zone';
- b.dataset.key=z.a;
- b.setAttribute('aria-label',z.a);
- b.style.left=z.l*100+'%';
- b.style.top=z.t*100+'%';
- b.style.width=z.w*100+'%';
- b.style.height=z.h*100+'%';
- if(z.round)b.style.borderRadius='50%';
- if(z.cut)b.style.clipPath='polygon(0 0,27% 0,100% 56%,100% 100%,0 100%)';
- const label=document.createElement('span');
- label.textContent=z.k;
- b.appendChild(label);
- wrap.appendChild(b);
-
- b.addEventListener('pointerdown',e=>{
-  e.preventDefault();
-  b.setPointerCapture?.(e.pointerId);
-  input(z.a,'down');
- });
- const release=()=>input(z.a,'up');
- b.addEventListener('pointerup',release);
- b.addEventListener('pointercancel',release);
-}
-
-const keymap={
- ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
- Enter:'ok',Escape:'esc',Backspace:'back',Tab:'appsw',
- z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
+(()=>{
+const screen=document.querySelector('#screen');
+const menus={
+home:{title:'MAIN MENU',items:[['Apps','apps'],['Connectivity','connect'],['Settings','settings'],['Tools','tools'],['About Flipper One','about']]},
+apps:{title:'APPLICATIONS',items:[['Infrared','infrared'],['Radio Tools','radio'],['GPIO / USB','gpio'],['NFC','nfc'],['Back','home']]},
+connect:{title:'CONNECTIVITY',items:[['Wi-Fi','wifi'],['Bluetooth','bluetooth'],['Ethernet','ethernet'],['Back','home']]},
+settings:{title:'SETTINGS',items:[['Display','display'],['Sound','sound'],['Input','input'],['Device info','about'],['Back','home']]},
+tools:{title:'TOOLS',items:[['File browser','files'],['System log','logs'],['Diagnostics','diagnostics'],['Back','home']]}
 };
-
-document.addEventListener('keydown',e=>{
- const k=keymap[e.key];
- if(k){e.preventDefault();input(k,'down');}
-});
-document.addEventListener('keyup',e=>{
- const k=keymap[e.key];
- if(k){e.preventDefault();input(k,'up');}
-});
-
-if(window.FlipperOneUI){
- try{
-  window.FlipperOneUI.mount(ui);
-  stat.textContent='Official UI loaded';
- }catch(error){
-  stat.textContent='Official UI failed to mount';
-  console.error(error);
- }
-}else{
- stat.textContent='Official UI bundle not loaded';
+const pages={
+infrared:['INFRARED',['Remote control','Saved remotes','Learn signal','No hardware connected']],
+radio:['RADIO TOOLS',['Sub-GHz overview','Frequency presets','Signal viewer','Demo only — no radio access']],
+gpio:['GPIO / USB',['Pin map','USB utilities','Hardware status','No hardware connected']],
+nfc:['NFC',['Read tag','Saved tags','Emulate tag','No NFC hardware connected']],
+wifi:['WI-FI',['Network scan','Saved networks','Interface status','No network access in this demo']],
+bluetooth:['BLUETOOTH',['Nearby devices','Paired devices','Interface status','No Bluetooth access in this demo']],
+ethernet:['ETHERNET',['Link status','IP configuration','Network details','No network access in this demo']],
+display:['DISPLAY',['Brightness: 80%','Theme: Classic','Screen: 256 × 144','Use Enter to toggle setting']],
+sound:['SOUND',['Speaker: On','Volume: 60%','Vibration: Off','Use Enter to toggle setting']],
+input:['INPUT',['Button test','Keyboard mapping','Input latency','Press device buttons to test']],
+files:['FILE BROWSER',['/','apps/','assets/','No local device files available']],
+logs:['SYSTEM LOG',['[info] UI started','[info] Demo mode active','[info] No backend connected','End of log']],
+diagnostics:['DIAGNOSTICS',['Display: OK','Input: OK','Backend: Not connected','Network: Not used']],
+about:['ABOUT FLIPPER ONE',['Browser UI replacement','Standalone demo interface','Not the official Slint runtime','No device connection']]
+};
+let page='home',cursor=0,stack=[],clockStart=Date.now(),settingsToggles={};
+function rows(){return menus[page]?.items||pages[page]?.[1].map((s,i)=>[s,'item'+i])||[]}
+function enter(target){if(target==='item0'||target==='item1'||target==='item2'||target==='item3'){let key=page+':'+target;settingsToggles[key]=!settingsToggles[key];return render()}if(target==='home'){page='home';cursor=0;stack=[];return render()}if(menus[target]||pages[target]){stack.push(page);page=target;cursor=0;render()}}
+function back(){if(stack.length){page=stack.pop();cursor=0}else{page='home';cursor=0}render()}
+function render(){
+const list=rows();cursor=Math.max(0,Math.min(cursor,list.length-1));
+const title=menus[page]?.title||pages[page]?.[0]||'MAIN MENU';
+screen.innerHTML='<div class="statusbar"><span>◈ FLIPPER ONE</span><span>▮▮▮ 100%</span></div><div class="screen-body"><div class="screen-title">'+title+'</div>'+list.map((r,i)=>'<div class="menu-item '+(i===cursor?'active':'')+'"><span class="arrow">'+(i===cursor?'▶':'')+'</span><span>'+r[0]+'</span><span style="margin-left:auto">'+(menus[r[1]]||pages[r[1]]?'›':(settingsToggles[page+':'+r[1]]?'ON':''))+'</span></div>').join('')+'</div><div class="screen-foot"><span>▲▼ NAVIGATE</span><span>OK SELECT · ESC BACK</span></div>';
 }
+function input(k){
+if(k==='up'){cursor=Math.max(0,cursor-1);render();return}
+if(k==='down'){cursor=Math.min(rows().length-1,cursor+1);render();return}
+if(k==='left'||k==='esc'||k==='back'){back();return}
+if(k==='right'||k==='ok'||k==='run'||k==='enter'){const r=rows()[cursor];if(r)enter(r[1]);return}
+if(k==='view'){page='about';cursor=0;render();return}
+if(k==='power'){page='home';cursor=0;stack=[];render();return}
+if(k==='edit'){page='settings';cursor=0;stack.push(page);render()}
+}
+document.querySelectorAll('[data-key]').forEach(b=>{b.addEventListener('click',()=>input(b.dataset.key));b.addEventListener('pointerdown',()=>b.classList.add('pressed'));['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>b.classList.remove('pressed')))});
+document.addEventListener('keydown',e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'esc',Backspace:'back',Tab:'view',z:'esc',x:'view',c:'power',v:'edit',b:'run'};const k=map[e.key];if(k){e.preventDefault();input(k)}});
+document.querySelector('#home').onclick=()=>{page='home';cursor=0;stack=[];render()};
+document.querySelector('#settings').onclick=()=>{stack.push(page);page='settings';cursor=0;render()};
+document.querySelector('#about').onclick=()=>{stack.push(page);page='about';cursor=0;render()};
+document.querySelector('#reset').onclick=()=>{page='home';cursor=0;stack=[];settingsToggles={};render()};
+render();
+})();
 </script>
 </body>
 </html>
