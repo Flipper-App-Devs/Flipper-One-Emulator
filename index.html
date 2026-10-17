@@ -1,0 +1,182 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flipper One</title>
+<style>
+  html, body {
+    margin: 0; height: 100%;
+    background: #14171C;
+    display: flex; align-items: center; justify-content: center;
+    font: 12px system-ui, sans-serif; color: #fff;
+    overflow: hidden;
+  }
+  /* A minimum size matters: the wrap is sized by the photo, so if that fails to
+     load the wrap collapses to nothing and the absolutely-positioned panel and
+     glow, both sized in percentages, vanish with it. The page then looks empty
+     with no clue why. */
+  #wrap {
+    position: relative; display: inline-block; isolation: isolate; line-height: 0;
+    min-width: 512px; min-height: 270px;
+  }
+  /* Photo missing: drop the percentage layout and show the panel on its own at a
+     plain 2x, so the view still works. */
+  body.nophoto #photo { display: none; }
+  body.nophoto #wrap { min-width: 0; min-height: 0; }
+  body.nophoto #glow { position: static; width: 512px; height: 288px; }
+  body.nophoto #panel, body.nophoto #nosignal {
+    position: absolute; left: 0; top: 0; width: 512px; height: 288px;
+  }
+  /* Layers, low to high: amber ground, the live panel multiplied over it so
+     black ink stays black and white becomes backlight, then the device photo
+     whose transparent screen cutout reveals the panel. The multiply happens
+     inside the canvas, so the amber ground below it only shows before the first
+     frame arrives. */
+  #glow { position: absolute; z-index: 0; background: #FF8200; }
+  /* No blend mode: the canvas already carries the amber, multiplied into each
+     pixel by the blitter. A mix-blend-mode layer here forced the browser to
+     re-blend and recomposite this stack, photo included, on every frame. */
+  #panel {
+    position: absolute; z-index: 1;
+    image-rendering: pixelated;
+  }
+  #photo {
+    position: relative; z-index: 2; display: block;
+    width: auto; height: auto; max-width: 98vw; max-height: calc(92vh - 48px);
+    pointer-events: none;
+  }
+  .zone {
+    position: absolute; z-index: 3; box-sizing: border-box;
+    cursor: pointer; touch-action: none;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none;
+  }
+  .zone span {
+    pointer-events: none; display: none;
+    font: bold 14px monospace; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.9);
+  }
+  .show .zone { background: rgba(255,130,0,.35); border: 1px solid rgba(255,255,255,.85); }
+  .show .zone span { display: block; }
+  /* Over the panel and under the photo, so the bezel frames it like the glass. The
+     panel goes dark rather than keeping its last frame, which would read as a
+     device that is up and simply not changing. */
+  #nosignal {
+    position: absolute; z-index: 1; display: none;
+    align-items: center; justify-content: center;
+    background: #000; container-type: inline-size;
+  }
+  #nosignal span {
+    font: bold 11cqw monospace; letter-spacing: .08em; color: #FF8200;
+  }
+  body.nosignal #nosignal { display: flex; }
+  /* The page's controls and its status, one above the other under the tab bar. */
+  #hud {
+    position: fixed; top: 60px; left: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; user-select: none;
+  }
+  #hud label {
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font: 600 15px system-ui, sans-serif; color: #FF8200;
+  }
+  /* A switch rather than a checkbox: the box itself, restyled, so the label and the
+     keyboard still work as they would on any checkbox. */
+  #toggle {
+    appearance: none; margin: 0; cursor: pointer; position: relative;
+    width: 36px; height: 20px; border-radius: 10px; box-sizing: border-box;
+    border: 2px solid #8A9099; background: transparent;
+  }
+  #toggle::before {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px; border-radius: 50%; background: #8A9099;
+    transition: left .12s;
+  }
+  #toggle:checked { border-color: #FF8200; background: rgba(255, 130, 0, .25); }
+  #toggle:checked::before { left: 18px; background: #FF8200; }
+  #status { font-variant-numeric: tabular-nums; color: #8A9099; }
+</style>
+
+<div id="hud">
+  <label>Show controls <input type="checkbox" id="toggle"></label>
+  <div id="status">Status: <span id="stat">connecting</span></div>
+</div>
+
+<div id="wrap">
+  <div id="glow"></div>
+  <canvas id="panel" width="256" height="144"></canvas>
+  <div id="nosignal"><span>NO SIGNAL</span></div>
+  <img id="photo" src="device.png" alt="">
+</div>
+
+<script src="remote.js"></script>
+<script>
+flipperTabs();
+
+const SCREEN = { l: 33.94, t: 28.89, w: 28.76, h: 30.65 };
+
+const ZONES = [
+  { a: 'esc',   k: 'Z',     l: .3411, t: .6301, w: .053, h: .053 },
+  { a: 'view',  k: 'X',     l: .3987, t: .6301, w: .053, h: .053 },
+  { a: 'power', k: 'C',     l: .4564, t: .6301, w: .053, h: .053 },
+  { a: 'edit',  k: 'V',     l: .5140, t: .6301, w: .053, h: .053 },
+  { a: 'run',   k: 'B',     l: .5716, t: .6301, w: .053, h: .053 },
+  { a: 'up',    k: '\u2191', l: .7106, t: .3105, w: .045, h: .085 },
+  { a: 'left',  k: '\u2190', l: .6636, t: .3990, w: .045, h: .086 },
+  { a: 'ok',    k: 'Enter', l: .7106, t: .3990, w: .045, h: .086, round: 1 },
+  { a: 'right', k: '\u2192', l: .7576, t: .3990, w: .045, h: .086 },
+  { a: 'down',  k: '\u2193', l: .7106, t: .4885, w: .045, h: .085 },
+  { a: 'appsw', k: 'Tab',   l: .6596, t: .5535, w: .0615, h: .0811, cut: 1 },
+  { a: 'back',  k: 'Bksp',  l: .7780, t: .5655, w: .0515, h: .0969, round: 1 },
+  { a: 'ptt',   k: 'A',     l: .2255, t: .1536, w: .071,  h: .034 },
+];
+
+const wrap = document.getElementById('wrap');
+const glow = document.getElementById('glow');
+const panel = document.getElementById('panel');
+const nosignal = document.getElementById('nosignal');
+const photo = document.getElementById('photo');
+const stat = document.getElementById('stat');
+// The backlight colour, multiplied into every pixel. Same value as the ground
+// below the canvas, so the two agree before the first frame lands.
+const AMBER = [0xFF, 0x82, 0x00];
+const blitter = new GreyBlitter(panel.getContext('2d'), 256, 144, AMBER);
+
+for (const k of ['left', 'top', 'width', 'height']) {
+  const v = SCREEN[k[0]] + '%';
+  for (const el of [glow, panel, nosignal]) el.style[k] = v;
+}
+
+// Say so in the HUD rather than leaving a blank page: without the photo the wrap
+// collapses and the percentage-positioned panel disappears with it.
+photo.addEventListener('error', () => {
+  document.body.classList.add('nophoto');
+  stat.textContent = 'device.png missing';
+});
+
+// Click map over the photo's physical buttons, each a fraction of the image.
+for (const z of ZONES) {
+  const el = document.createElement('button');
+  el.className = 'zone';
+  el.dataset.k = z.a;
+  el.style.left = (z.l * 100) + '%';
+  el.style.top = (z.t * 100) + '%';
+  el.style.width = (z.w * 100) + '%';
+  el.style.height = (z.h * 100) + '%';
+  if (z.round) el.style.borderRadius = '50%';
+  if (z.cut) el.style.clipPath = 'polygon(0 0, 27% 0, 100% 56%, 100% 100%, 0 100%)';
+  const label = document.createElement('span');
+  label.textContent = z.k;
+  el.appendChild(label);
+  wrap.appendChild(el);
+}
+flipperWireInput('.zone');
+
+document.getElementById('toggle').addEventListener('change', e => {
+  document.body.classList.toggle('show', e.target.checked);
+});
+
+flipperStream((grey, x, y, w, h) => blitter.draw(grey, x, y, w, h),
+              (text, ok) => {
+                stat.textContent = text;
+                document.body.classList.toggle('nosignal', ok === false);
+              });
+</script>
