@@ -1,21 +1,19 @@
-/* Flipper One browser UI simulation — original device image/layout unchanged */
-#official-ui{font-family:monospace;color:#ff941f;background:#160b02;line-height:1.15;font-size:clamp(6px,1.05vw,12px);user-select:none}
-#official-ui .fo-screen{height:100%;width:100%;display:flex;flex-direction:column;background:#1a0c00;color:#ff9b32;overflow:hidden;border:1px solid #a64d00;box-shadow:inset 0 0 12px #713000}
-#official-ui .fo-status{height:13%;min-height:9px;display:flex;align-items:center;justify-content:space-between;padding:0 4%;background:#ff941f;color:#241000;font-weight:bold;font-size:.82em;white-space:nowrap}
-#official-ui .fo-title{padding:3% 5% 2%;font-weight:bold;color:#ffb45c;border-bottom:1px solid #a64d00;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#official-ui .fo-body{flex:1;min-height:0;overflow:hidden;padding:2% 3%;display:flex;flex-direction:column}
-#official-ui .fo-item{display:flex;align-items:center;gap:5px;min-height:0;flex:1;padding:0 3%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ff9b32}
-#official-ui .fo-item.selected{background:#ff941f;color:#241000;font-weight:bold}
-#official-ui .fo-cursor{width:.8em;flex:0 0 .8em}
-#official-ui .fo-footer{padding:2% 4%;font-size:.78em;color:#ffb45c;border-top:1px solid #a64d00;display:flex;justify-content:space-between;white-space:nowrap}
-#official-ui .fo-message{margin:auto;text-align:center;line-height:1.5;padding:4%;color:#ffb45c}
-#official-ui .fo-bar{height:5px;border:1px solid #ffb45c;width:70%;margin:7px auto 0}
-#official-ui .fo-bar span{display:block;height:100%;background:#ff941f}
-#official-ui .fo-muted{color:#d97717}
+/* Flipper One desktop-style orange screen simulation */
+#screen{z-index:3!important;background:#ff8200!important}
+#official-ui{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#ff8200!important;color:#080500!important;font-family:monospace;user-select:none}
+#official-ui .fo-screen{position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:#ff8200;color:#080500;border:1px solid #080500;box-shadow:inset 0 0 0 2px #ff8200;line-height:1.05;font-size:clamp(7px,1.25vw,14px)}
+#official-ui .fo-top{height:12%;min-height:13px;max-height:24px;flex:0 0 12%;display:flex;align-items:center;justify-content:space-between;background:#050505;color:#ff8200;border-bottom:2px solid #15100b;padding:0 2%;font-size:1.02em;font-weight:bold}
+#official-ui .fo-mark{letter-spacing:-2px;font-size:1.2em}
+#official-ui .fo-body{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;padding:7px 3.2% 5px 2.8%;overflow:hidden;background:#ff8200}
+#official-ui .fo-item{display:flex;align-items:center;gap:5px;flex:1;min-height:0;padding:0 2%;border-bottom:1px solid rgba(25,12,0,.28);white-space:nowrap;overflow:hidden;color:#080500;font-weight:400}
+#official-ui .fo-item:last-child{border-bottom:0}
+#official-ui .fo-item.selected{border:2px solid #090500;border-radius:6px;font-weight:bold;padding-left:calc(2% - 1px);margin:0 0 1px}
+#official-ui .fo-icon{width:1.3em;flex:0 0 1.3em;font-size:1.15em;line-height:1;text-align:center}
+#official-ui .fo-label{overflow:hidden;text-overflow:ellipsis}
+#official-ui .fo-scroll{position:absolute;right:1px;top:13%;bottom:2%;width:3px;border-left:1px solid rgba(0,0,0,.35);background:rgba(0,0,0,.06)}
+#official-ui .fo-scroll span{position:absolute;left:0;right:0;height:22%;background:#ff8200;border:1px dotted #080500}
 #official-ui .fo-screen *{box-sizing:border-box}
-@media (max-width:600px){#official-ui{font-size:clamp(6px,1.7vw,10px)}}
-/* Keep the screen above the device photo and controls above the screen. */
-#screen{z-index:3!important}
-#official-ui{z-index:3!important}
+#official-ui canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+#official-ui img{image-rendering:pixelated}
 .zone{z-index:4!important}
-#official-ui .fo-screen{line-height:1.15}
+@media(max-width:600px){#official-ui .fo-screen{font-size:clamp(7px,1.8vw,12px)}}
