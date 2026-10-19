@@ -109,8 +109,13 @@ function activate(){
 }
 function back(){if(!powered){powered=true;page='home';stack=[];selected=0;offset=0;render();return}notice='';if(page==='detail'){stack.pop();page=stack.length?'menu':'home'}else if(page==='menu'){stack.pop();page=stack.length?'menu':'home'}selected=0;offset=0;render()}
 function input(d){
- if(!d||!d.key)return;const k=String(d.key).toLowerCase();
- if(d.type==='up'){pressed.delete(k);return}if(d.type!=='down'||pressed.has(k))return;pressed.add(k);
+ if(!d||!d.key)return;
+ const k=String(d.key).toLowerCase();
+ if(d.type==='up'){pressed.delete(k);return}
+ if(d.type!=='down')return;
+ // Ignore duplicate keydown events while a physical/keyboard button is held.
+ if(pressed.has(k))return;
+ pressed.add(k);
  if(k==='power'){powered=!powered;if(powered){page='home';stack=[];selected=0;offset=0;notice='Powered on'}else notice='';render();return}
  if(!powered)return;
  if(k==='up')move(-1);else if(k==='down')move(1);
