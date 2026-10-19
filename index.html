@@ -19,7 +19,7 @@ body{display:flex;align-items:center;justify-content:center;overflow:hidden}
 #toggle{accent-color:#ff8200}
 #status{color:#aaa}
 #stat{color:#ff8200}
-.zone{position:absolute;z-index:20;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:white;cursor:pointer;touch-action:none}
+.zone{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:white;cursor:pointer;touch-action:none}
 .zone span{display:none;font-size:10px;line-height:1}
 .show .zone{outline:1px solid #ff8200aa;background:#ff820022}
 .show .zone span{display:block}
@@ -44,8 +44,8 @@ body.nophoto #screen{left:0;top:0;width:100%;height:100%}
 </div>
 
 <!-- Flipper One browser UI simulation assets. -->
-<link rel="stylesheet" href="./flipper-one-ui.css?v=10">
-<script src="./flipper-one-ui.js?v=10"></script>
+<link rel="stylesheet" href="./flipper-one-ui.css?v=8">
+<script src="./flipper-one-ui.js?v=8"></script>
 
 <script>
 const zones=[
@@ -99,14 +99,14 @@ for(const z of zones){
  b.appendChild(label);
  wrap.appendChild(b);
 
- let held=false;
- const press=e=>{e.preventDefault();if(held)return;held=true;try{b.setPointerCapture(e.pointerId)}catch(_){}input(z.a,'down')};
- const release=e=>{if(!held)return;held=false;if(e)e.preventDefault();input(z.a,'up')};
- b.addEventListener('pointerdown',press);
+ b.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  b.setPointerCapture?.(e.pointerId);
+  input(z.a,'down');
+ });
+ const release=()=>input(z.a,'up');
  b.addEventListener('pointerup',release);
  b.addEventListener('pointercancel',release);
- b.addEventListener('lostpointercapture',release);
- b.addEventListener('click',e=>{e.preventDefault();if(!held){input(z.a,'down');input(z.a,'up')}});
 }
 
 const keymap={
@@ -115,16 +115,14 @@ const keymap={
  z:'esc',x:'view',c:'power',v:'edit',b:'run',a:'ptt'
 };
 
-const heldKeys=new Set();
 document.addEventListener('keydown',e=>{
  const k=keymap[e.key];
- if(k){e.preventDefault();if(!heldKeys.has(k)){heldKeys.add(k);input(k,'down');}}
+ if(k){e.preventDefault();input(k,'down');}
 });
 document.addEventListener('keyup',e=>{
  const k=keymap[e.key];
- if(k){e.preventDefault();heldKeys.delete(k);input(k,'up');}
+ if(k){e.preventDefault();input(k,'up');}
 });
-window.addEventListener('blur',()=>{for(const k of heldKeys)input(k,'up');heldKeys.clear();});
 
 if(window.FlipperOneUI){
  try{
